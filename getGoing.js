@@ -37,10 +37,7 @@ GGApp.controller('GGLoginCtrl', function ($scope, $cookies){
   });
 
 GGApp.controller('GGMainCtrl', function ($scope, $http){
-
-    // fist time initialization; show (at least) the day and time!
-    t = new Date();
-    $scope.dateStr = gg.wStr[t.getDay()] + " " + t.getDate() + " " + gg.mStr[t.getMonth()] + " " + t.getFullYear();
+	// see main section at bottom
 
     $scope.emptyData = function() {
       ///////
@@ -58,8 +55,6 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
       $scope.weekDayStr = "";
       //////
     };
-
-    $scope.emptyData(); // then wait for login
 
     $scope.getUserData = function() {
       // use 'return' so controller knows when promise is resolved; runs apply
@@ -152,7 +147,7 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
 
     $scope.$on('doLogin', function(e,uname) { 
       console.log("doLogin " + uname); 
-      _gaq.push(['_trackEvent', 'User', 'Login', uname]);
+      ggEventLog('login', uname);
       $scope.userName = uname;  // thanks, login controller
       $scope.ggNoEdit = false; // ok to edit now
       $scope.ggnamePath = "gnetrc";
@@ -163,12 +158,10 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
     } );
 
     $scope.$on('doLogout', function(e,args) { 
-      console.log("doLogout "); 
-      _gaq.push(['_trackEvent', 'User', 'Logout', $scope.userName]);
+      console.log("doLogout " + $scope.userName); 
+      ggEventLog('logout', $scope.userName);
       $scope.emptyData();
     } );
-
-    $scope.timeCheck();  // init - show the time
 
     $scope.addTimeTask = function( ) {
       console.log("addTimeTask " + $scope.addTime + " - " + $scope.addTask);
@@ -227,10 +220,19 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
           "ggSpecialDays": $scope.ggSpecialDays,
           "ggWeatherCity": $scope.ggWeatherCity })
       }); 
-      _gaq.push(['_trackEvent', 'User', 'edit', $scope.userName]);
+      ggEventLog('edit', $scope.userName);
       $scope.cleanData = false;   // redo the data calcs
       $scope.checkData(); // should be autocalled somehow
     // see http://naleid.com/blog/2013/05/22/saving-json-client-side-to-an-s3-bucket
     // interesting, but not used here; http://christophervachon.com/blog/2014/08/02/aws-s3-connecting-and-getting-a-list-of-objects
     };
+
+
+
+    // fist time initialization; show (at least) the day and time!
+    t = new Date();
+    $scope.dateStr = gg.wStr[t.getDay()] + " " + t.getDate() + " " + gg.mStr[t.getMonth()] + " " + t.getFullYear();
+    $scope.emptyData(); // then wait for login
+    $scope.timeCheck();  // init - show the time
+    // done with 'main' section; (perpetual) one-second timer is set in timeCheck
   });
