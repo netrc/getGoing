@@ -118,7 +118,7 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       $scope.idReplaceClass("t"+t.t, 'ggProg', 'ggRed');
       $scope.idReplaceClass("s"+t.t, 'ggProg', 'ggRed');
       // unset/hide prog bar
-      $scope.ggHideProg[t.t] = false;
+      $scope.ggHideProg[t.t] = true;
     };
 
     $scope.goProg = function GGMainCtrl_goProg (d, s) {
@@ -128,7 +128,7 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
 		    $scope.idAddClass("s"+d.t.t, "ggProg");      	
       }
       d.x = "prog";
-      $scope.ggHideProg[t.t] = true;
+      $scope.ggHideProg[d.t.t] = false;
       // show prog
       // set prog
       document.getElementById("p"+d.t.t).innerHTML = " "+(d.t.ts-s);
