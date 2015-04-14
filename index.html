@@ -20,7 +20,7 @@
     float: none;
   }
   .ggTimeStr {
-    font-size: 250%;
+    font-size: 300%;
     color: #EEEEFF;
   }
   .ggSecsStr {
@@ -32,6 +32,9 @@
    .ggRed {
   color: #FF0000;
   }
+   .ggProg {
+   	color: #0000CC;
+   }
 </style>
 <script type="text/javascript">
 // Google Analytics
@@ -75,8 +78,12 @@
 
 <table width="100%">
   <tr ng-repeat="tt in ggTaskTimes | orderBy: 'ts'">
-    <td id="t{{tt.t}}" width="42%" align="right" class="ggTT" > {{ tt.t }} </td>
-    <td id="s{{tt.t}}" width="58%" align="left" class="ggTT" > &nbsp; &nbsp; {{ tt.s }} </td>
+  	<td width="15%"> &nbsp; </td>
+  	<td width="15%"> <div id="p{{tt.t}}" ng-hide="ggHideProg['{{tt.t}}']"> ppp </div> </td>
+  	<td width="2%"> &nbsp; </td>
+    <td id="t{{tt.t}}" width="10%" align="right" class="ggTT" > {{ tt.t }} </td>
+    <td width="2%"> &nbsp; &nbsp; </td>
+    <td id="s{{tt.t}}" width="58%" align="left" class="ggTT" > {{ tt.s }} </td>
   </tr>
 </table>
 

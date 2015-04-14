@@ -5,7 +5,7 @@ gg.wStr = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 
 var GGApp = angular.module('GGApp', ["ngCookies"]);
 
-GGApp.controller('GGLoginCtrl', function ($scope, $cookies){
+GGApp.controller('GGLoginCtrl', function GGApp_GGLoginCtrl($scope, $cookies){
     var x = $cookies.getGoingUserName;  // so we can read this in the debugger
     console.log("ggun cookie:"+x+".");
     if ( !$cookies.getGoingUserName) {
@@ -16,7 +16,7 @@ GGApp.controller('GGLoginCtrl', function ($scope, $cookies){
       $scope.$emit('doLogin',$scope.username);  // first time, use cookie
     }
 
-    $scope.dologinstate = function() {
+    $scope.dologinstate = function GGLoginCtrl_dologinstate() {
       if ($scope.loginstate == "login") {
         console.log("login " + $scope.username);
         if (!$scope.username) { // empty?
@@ -36,11 +36,10 @@ GGApp.controller('GGLoginCtrl', function ($scope, $cookies){
     // Facebook login fiddle http://jsfiddle.net/z6u2z75z/
   });
 
-GGApp.controller('GGMainCtrl', function ($scope, $http){
+GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
 	// see main section at bottom
 
-    $scope.emptyData = function() {
-      ///////
+    $scope.emptyData = function GGMainCtrl_emptyData() {
       // the user's data, an array of objects, with timeStr and taskStr
       $scope.userName = ""; // wait for login
       $scope.ggNoEdit = true; // wait for login action
@@ -50,27 +49,20 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
       // this is an object, propert keys are date, e.g. 25 June, vals are string
       $scope.ggSpecialDays = { };
       $scope.ggWeatherCity= "";
-
       $scope.specialDayStr = "";
       $scope.weekDayStr = "";
       //////
     };
 
-    $scope.getUserData = function() {
+    $scope.getUserData = function GGMainCtrl_getUserData() {
       // use 'return' so controller knows when promise is resolved; runs apply
       return $http.get($scope.ggStoragePath).success(function(data) {
-        if (data.ggTaskTimes) {
-          $scope.ggTaskTimes = data.ggTaskTimes;
-        }
-        if (data.ggSpecialDays) {
-          $scope.ggSpecialDays = data.ggSpecialDays;
-        }
-        if (data.ggWeekDays) {
-          $scope.ggWeekDays = data.ggWeekDays;
-        }
-        if (data.ggWeatherCity) {
-          $scope.ggWeatherCity = data.ggWeatherCity;
-        }
+      	// collect the data from the file, if set
+        ['ggTaskTimes','ggSpecialDays','ggWeekDays','ggWeatherCity'].forEach(function getUserData_setVals(s) {
+        	if (data[s]) {
+          		$scope[s] = data[s];
+          	}
+        });
         $scope.weekDayStr = $scope.ggWeekDays[t.getDay()].s;
         thisday = t.getDate() + " " + gg.mStr[t.getMonth()];
         if ($scope.ggSpecialDays[ thisday ]) {
@@ -88,64 +80,92 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
       }) ;
     };
 
-    $scope.checkData = function () {
+    $scope.checkData = function GGMainCtrl_checkData() {
       if ($scope.cleanData) { 
-        return 
+        return
       }; // apparently, clean
 
+      // now go through and (re)-set the array of todos
+      $scope.todoArray = [];
       var cnow=new Date();
       var cs = cnow.getHours()*60*60 + cnow.getMinutes()*60 + cnow.getSeconds();
-      $scope.ggTaskTimes.forEach(function(t) {
+      $scope.ggTaskTimes.forEach(function checkData_settodoTimes(t) {
         var i = t.t.indexOf(":");
         var th = t.t.substr(0,i);
         var tm = t.t.substr(i+1);
-        t.ts = th * 60 + 1*tm;
+        var d = { tp: th*60*60 + tm*60 -120, t:t, x:''};
+        $scope.ggHideProg[t.t] = true;
+        t.ts = th*60*60 + tm*60;		// n.b. this is used in template order-by
         //console.log("cd:" + t.t + " th:" + th + " tm:" + tm + "  secs:" + ts);
-        sToGo = t.ts*60-cs;
-        console.log("checkData: " + t.s +" : " + t.t + " ... " + sToGo);
-        if (sToGo < 1) {
-          $scope.goRed(t);
-        } else {
-          var z = setTimeout(function(){$scope.goRed(t)},sToGo*1000);
-        }
+        console.log("checkData: " + t.s +" : " + t.t + " ... " + d.ts);
+        $scope.todoArray.push( d );
       } );
-      // now go through and (re)-set the array of todos
-      $scope.todoArray = [];
-      var i = 0;
-      $scope.ggTaskTimes.forEach(function(t) {
-        $scope.todoArray.push( {ts:(t.ts-120), d:'startCountdown', i:i} );
-        $scope.todoArray.push( {ts:t.ts, d:'goRed', i:i} );
-        i++;
-      } );
-      // sort todoArray
-      // run through logic for all secs up to now
+      // sort todoArray  - ???
       $scope.cleanData = true;
     };
 
-    $scope.goRed = function (t) {
-      console.log("goRed: " + t.s);
-      document.getElementById("t"+t.t).className += " ggRed";
-      document.getElementById("s"+t.t).className += " ggRed";
+    $scope.idReplaceClass = function GGMainCtrl_idReplaceClass (id,oc,nc) {
+      var cStr =     document.getElementById(id).className;
+      cStr = cStr.split(oc).join(' ') + " " + nc;
+      document.getElementById(id).className = cStr;
+    };
+    $scope.idAddClass = function GGMainCtrl_idAddClass (id,nc) {
+      document.getElementById(id).className += " " + nc;
     };
 
-    $scope.timeCheck = function () {
+    $scope.goRed = function GGMainCtrl_goRed (t) {
+      console.log("goRed: " + t.s);
+      $scope.idReplaceClass("t"+t.t, 'ggProg', 'ggRed');
+      $scope.idReplaceClass("s"+t.t, 'ggProg', 'ggRed');
+      // unset/hide prog bar
+      $scope.ggHideProg[t.t] = false;
+    };
+
+    $scope.goProg = function GGMainCtrl_goProg (d, s) {
+      console.log("goProg: " + d.t.s);
+      if (d.x != "prog") { // add the class only once
+      		$scope.idAddClass("t"+d.t.t, "ggProg");
+		    $scope.idAddClass("s"+d.t.t, "ggProg");      	
+      }
+      d.x = "prog";
+      $scope.ggHideProg[t.t] = true;
+      // show prog
+      // set prog
+      document.getElementById("p"+d.t.t).innerHTML = " "+(d.t.ts-s);
+    };
+
+    $scope.timeCheck = function GGMainCtrl_timeCheck() {
       $scope.checkData();
 
       var tnow=new Date();
       var h=tnow.getHours();
       var m=tnow.getMinutes();
-      if (m<10) {m = "0" + m};  // add zero in front of numbers < 10
       var s=tnow.getSeconds();
+      var thisSec = h*60*60 + m*60 + s;
+      if (m<10) {m = "0" + m};  // add zero in front of numbers < 10
       if (s<10) {s = "0" + s};  // add zero in front of numbers < 10
       $scope.timeStr = h + ":" +m;
       $scope.secsStr = s;
       $scope.$apply();
-      var t = setTimeout(function(){$scope.timeCheck()},1000);
+      var t = setTimeout(function timeCheck_setTimeout(){$scope.timeCheck()},1000);
       //$scope.$timeout(function(){$scope.timeCheck()},1000);  // auto-call 'apply'
       //return $scope.$timeout(function(){$scope.timeCheck()},1000);  // auto-call 'apply'
+      // do what updates are ready
+      $scope.todoArray.forEach(function timeCheck_GoRed(d) {
+		if (thisSec >= d.t.ts) {
+			if (d.x != "red") {
+				$scope.goRed(d.t);
+				d.x = 'red';
+			}
+		} else if ( (d.tp <= thisSec) && (thisSec < d.t.ts) ){
+			$scope.goProg(d, thisSec);
+		}
+		});     
     };
 
-    $scope.$on('doLogin', function(e,uname) { 
+    /////////////////////////////////////////////////////////////////////////////
+    // LOGIN 
+    $scope.$on('doLogin', function GGMainCtrl_doLoginCB(e,uname) { 
       console.log("doLogin " + uname); 
       ggEventLog('login', uname);
       $scope.userName = uname;  // thanks, login controller
@@ -157,38 +177,40 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
       $scope.getUserData();
     } );
 
-    $scope.$on('doLogout', function(e,args) { 
+    $scope.$on('doLogout', function GGMainCtrl_doLogoutCB(e,args) { 
       console.log("doLogout " + $scope.userName); 
       ggEventLog('logout', $scope.userName);
       $scope.emptyData();
     } );
 
-    $scope.addTimeTask = function( ) {
+    //////////////////////////////////////////////////////////////////////////
+    // EDITING 
+    $scope.addTimeTask = function GGMainCtrl_addTimeTask( ) {
       console.log("addTimeTask " + $scope.addTime + " - " + $scope.addTask);
       $scope.ggTaskTimes.push( { t:$scope.addTime, s:$scope.addTask } );
       $scope.addTime = "";
       $scope.addTask = "";
       $scope.storeData();
     };
-    $scope.removeTime = function( t ) {
+    $scope.removeTime = function GGMainCtrl_removeTime( t ) {
       console.log("removetime " + t);
       $scope.ggTaskTimes = $scope.ggTaskTimes.filter( function(n){ 
         return n.t != t; });
       $scope.storeData();
     };
-    $scope.updateWeekDay = function( w ) {
+    $scope.updateWeekDay = function GGMainCtrl_updateWeekDay( w ) {
       console.log("updateWeekDay ");
       $scope.weekDayStr = $scope.ggWeekDays[t.getDay()].s; // in case its today
       $scope.storeData();
     }
-    $scope.clearWeekDay = function( w ) {
+    $scope.clearWeekDay = function GGMainCtrl_clearWeekDay( w ) {
       var n = gg.wStr.indexOf(w);
       console.log("clearWeekDay " + w + " " + n);
       $scope.ggWeekDays[n].s = "";
       $scope.weekDayStr = $scope.ggWeekDays[t.getDay()].s; // in case its today
       $scope.storeData();
     }
-    $scope.addSpecialDay = function( ) {
+    $scope.addSpecialDay = function GGMainCtrl_addSpecialDay( ) {
       console.log("addSpecialDay " + $scope.sdaddDay + " - " + $scope.sdaddWhat);
       if ( ($scope.sdaddDay) && ($scope.sdaddWhat)) {
       //$scope.ggSpecialDays.push( { d:$scope.sdaddDay, w:$scope.sdaddWhat } );
@@ -198,17 +220,17 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
         $scope.storeData();
       }
     };
-    $scope.removeSpecialDay = function( d ) {
+    $scope.removeSpecialDay = function GGMainCtrl_removeSpecialDay( d ) {
       console.log("removeSpecialDay " + d);
       delete $scope.ggSpecialDays[ d ]; 
       $scope.storeData();
     };
-    $scope.changeWeatherCity = function( w ) {
+    $scope.changeWeatherCity = function GGMainCtrl_changeWeatherCity( w ) {
       console.log("changeWC " + $scope.ggWeatherCity);
       $scope.storeData();
     }
 
-    $scope.storeData = function( t ) {
+    $scope.storeData = function GGMainCtrl_storeData( t ) {
       $.ajax({
         type: "PUT",
         url: $scope.ggStoragePath,
@@ -222,11 +244,11 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
       }); 
       ggEventLog('edit', $scope.userName);
       $scope.cleanData = false;   // redo the data calcs
-      $scope.checkData(); // should be autocalled somehow
+      $scope.checkData(); // should be autocalled somehow; this also kicks off the time todo list calcs
     // see http://naleid.com/blog/2013/05/22/saving-json-client-side-to-an-s3-bucket
     // interesting, but not used here; http://christophervachon.com/blog/2014/08/02/aws-s3-connecting-and-getting-a-list-of-objects
     };
-
+    // DONE EDITING ////////////////////////////////////////////////
 
 
     // fist time initialization; show (at least) the day and time!
@@ -234,5 +256,6 @@ GGApp.controller('GGMainCtrl', function ($scope, $http){
     $scope.dateStr = gg.wStr[t.getDay()] + " " + t.getDate() + " " + gg.mStr[t.getMonth()] + " " + t.getFullYear();
     $scope.emptyData(); // then wait for login
     $scope.timeCheck();  // init - show the time
+    $scope.ggHideProg = {};
     // done with 'main' section; (perpetual) one-second timer is set in timeCheck
   });
