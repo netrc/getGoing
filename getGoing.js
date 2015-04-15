@@ -93,11 +93,11 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
         var i = t.t.indexOf(":");
         var th = t.t.substr(0,i);
         var tm = t.t.substr(i+1);
-        var d = { tp: th*60*60 + tm*60 -120, t:t, x:''};
-        $scope.ggHideProg[t.t] = true;
         t.ts = th*60*60 + tm*60;		// n.b. this is used in template order-by
+        var d = { tp: t.ts-120, t:t, x:''};
+        $scope.ggHideProg[t.t] = true;
         //console.log("cd:" + t.t + " th:" + th + " tm:" + tm + "  secs:" + ts);
-        console.log("checkData: " + t.s +" : " + t.t + " ... " + d.ts);
+        console.log("checkData: " + t.s +" : " + t.t + " ... " + t.ts);
         $scope.todoArray.push( d );
       } );
       // sort todoArray  - ???
@@ -129,9 +129,9 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       }
       d.x = "prog";
       $scope.ggHideProg[d.t.t] = false;
-      // show prog
-      // set prog
-      document.getElementById("p"+d.t.t).innerHTML = " "+(d.t.ts-s);
+      var pc= ""+((s-d.tp)/120*100).toFixed(1)+"%";
+      //console.log("goProg - ",pc);
+      document.getElementById("bar"+d.t.t).style.width = pc;
     };
 
     $scope.timeCheck = function GGMainCtrl_timeCheck() {
