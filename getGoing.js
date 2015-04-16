@@ -60,6 +60,12 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       	// collect the data from the file, if set
         ['ggTaskTimes','ggSpecialDays','ggWeekDays','ggWeatherCity'].forEach(function getUserData_setVals(s) {
         	if (data[s]) {
+        		// need to set prog bar to Hide a.s.a.p.
+        		if (s == 'ggTaskTimes') {
+      				data[s].forEach(function getUserData_setHide(t) {
+      					$scope.ggHideProg[t.t] = true;
+      				});        			
+        		}
           		$scope[s] = data[s];
           	}
         });
@@ -96,6 +102,7 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
         t.ts = th*60*60 + tm*60;		// n.b. this is used in template order-by
         var d = { tp: t.ts-120, t:t, x:''};
         $scope.ggHideProg[t.t] = true;
+        $scope.barwidth[t.t] = "0%";
         //console.log("cd:" + t.t + " th:" + th + " tm:" + tm + "  secs:" + ts);
         console.log("checkData: " + t.s +" : " + t.t + " ... " + t.ts);
         $scope.todoArray.push( d );
@@ -129,8 +136,10 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       }
       d.x = "prog";
       $scope.ggHideProg[d.t.t] = false;
-      var pc= ""+((s-d.tp)/120*100).toFixed(1)+"%";
+      //var pc= { 'width': ((s-d.tp)/120*100).toFixed(1)+"%" };
+      //$scope.barwidth[d.t.t] = pc;
       //console.log("goProg - ",pc);
+      var pc= ((s-d.tp)/120*100).toFixed(1)+"%" ;
       document.getElementById("bar"+d.t.t).style.width = pc;
     };
 
@@ -152,13 +161,13 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       //return $scope.$timeout(function(){$scope.timeCheck()},1000);  // auto-call 'apply'
       // do what updates are ready
       $scope.todoArray.forEach(function timeCheck_GoRed(d) {
-		if (thisSec >= d.t.ts) {
+		if ( (d.tp <= thisSec) && (thisSec <= d.t.ts) ){
+			$scope.goProg(d, thisSec);
+		} else	if (thisSec >= d.t.ts) {
 			if (d.x != "red") {
 				$scope.goRed(d.t);
 				d.x = 'red';
 			}
-		} else if ( (d.tp <= thisSec) && (thisSec < d.t.ts) ){
-			$scope.goProg(d, thisSec);
 		}
 		});     
     };
@@ -257,5 +266,6 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
     $scope.emptyData(); // then wait for login
     $scope.timeCheck();  // init - show the time
     $scope.ggHideProg = {};
+    $scope.barwidth = {};
     // done with 'main' section; (perpetual) one-second timer is set in timeCheck
   });

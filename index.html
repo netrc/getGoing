@@ -105,7 +105,7 @@
   <tr ng-repeat="tt in ggTaskTimes | orderBy: 'ts'">
   	<td width="15%"> &nbsp; </td>
   	<td width="15%"> <div id="p{{tt.t}}" ng-hide="ggHideProg['{{tt.t}}']"> 
-  		<div id="progress" class="graph"><div class="bar" id="bar{{tt.t}}" style="width:34%"> </div></div>
+  		<div id="progress" class="graph"><div class="bar" id="bar{{tt.t}}" style="width:0%"> </div></div>
   		</div> </td>
   	<td width="2%"> &nbsp; </td>
     <td id="t{{tt.t}}" width="10%" align="right" class="ggTT" > {{ tt.t }} </td>
