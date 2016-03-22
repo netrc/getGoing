@@ -1,0 +1,26 @@
+{
+  "name": "getGoing",
+  "version": "0.8.0",
+  "description": "live schedules to keep kids on track",
+  "repository": "https://github.com/netrc/getGoing",
+  "private": false,
+  "scripts": {
+    "start": "node app.js",
+    "monitor": "nodemon app.js",
+    "deploy": "gcloud preview app deploy app.yaml",
+    "lint": "jshint --exclude-path=.gitignore .",
+    "test": "npm run lint"
+  },
+  "author": "Richard Campbell",
+  "license": "Apache Version 2.0",
+  "dependencies": {
+    "angular": "*",
+    "express": "^4.13.3"
+  },
+  "devDependencies": {
+    "jshint": "^2.8.0"
+  },
+  "engines": {
+    "node": ">=0.12.7"
+  }
+}
