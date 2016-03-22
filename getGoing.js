@@ -1,6 +1,6 @@
 
 var gg = {};
-gg.mStr = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
+gg.mStr = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 gg.wStr = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
 
 var GGApp = angular.module('GGApp', ["ngCookies"]);
@@ -88,8 +88,8 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
 
     $scope.checkData = function GGMainCtrl_checkData() {
       if ($scope.cleanData) { 
-        return
-      }; // apparently, clean
+        return;
+      } // apparently, clean
 
       // now go through and (re)-set the array of todos
       $scope.todoArray = [];
@@ -151,12 +151,12 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       var m=tnow.getMinutes();
       var s=tnow.getSeconds();
       var thisSec = h*60*60 + m*60 + s;
-      if (m<10) {m = "0" + m};  // add zero in front of numbers < 10
-      if (s<10) {s = "0" + s};  // add zero in front of numbers < 10
+      if (m<10) {m = "0" + m;}  // add zero in front of numbers < 10
+      if (s<10) {s = "0" + s;}  // add zero in front of numbers < 10
       $scope.timeStr = h + ":" +m;
       $scope.secsStr = s;
       $scope.$apply();
-      var t = setTimeout(function timeCheck_setTimeout(){$scope.timeCheck()},1000);
+      var t = setTimeout(function timeCheck_setTimeout(){$scope.timeCheck();},1000);
       //$scope.$timeout(function(){$scope.timeCheck()},1000);  // auto-call 'apply'
       //return $scope.$timeout(function(){$scope.timeCheck()},1000);  // auto-call 'apply'
       // do what updates are ready
@@ -181,7 +181,7 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       $scope.ggNoEdit = false; // ok to edit now
       $scope.ggnamePath = "gnetrc";
       //$scope.ggStoragePath = "http://getgoing1.s3.amazonaws.com/"+$scope.userName+"/ggTaskTimes.json";
-      $scope.ggStoragePath = "http://getgoing1.s3.amazonaws.com/"+$scope.userName+".json";
+      $scope.ggStoragePath = "https://getgoing1.s3.amazonaws.com/"+$scope.userName+".json";
       console.log($scope.ggStoragePath);
       $scope.getUserData();
     } );
@@ -211,14 +211,14 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
       console.log("updateWeekDay ");
       $scope.weekDayStr = $scope.ggWeekDays[t.getDay()].s; // in case its today
       $scope.storeData();
-    }
+    };
     $scope.clearWeekDay = function GGMainCtrl_clearWeekDay( w ) {
       var n = gg.wStr.indexOf(w);
       console.log("clearWeekDay " + w + " " + n);
       $scope.ggWeekDays[n].s = "";
       $scope.weekDayStr = $scope.ggWeekDays[t.getDay()].s; // in case its today
       $scope.storeData();
-    }
+    };
     $scope.addSpecialDay = function GGMainCtrl_addSpecialDay( ) {
       console.log("addSpecialDay " + $scope.sdaddDay + " - " + $scope.sdaddWhat);
       if ( ($scope.sdaddDay) && ($scope.sdaddWhat)) {
@@ -237,7 +237,7 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
     $scope.changeWeatherCity = function GGMainCtrl_changeWeatherCity( w ) {
       console.log("changeWC " + $scope.ggWeatherCity);
       $scope.storeData();
-    }
+    };
 
     $scope.storeData = function GGMainCtrl_storeData( t ) {
       $.ajax({
