@@ -174,6 +174,10 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
 
     /////////////////////////////////////////////////////////////////////////////
     // LOGIN 
+    $scope.doGoogleLogin = function GGMainCtrl_doGoogleLogin() {
+      console.log("doGoogleLogin "); 
+    }
+
     $scope.$on('doLogin', function GGMainCtrl_doLoginCB(e,uname) { 
       console.log("doLogin " + uname); 
       ggEventLog('login', uname);
