@@ -5,10 +5,24 @@ gg.wStr = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 
 var GGApp = angular.module('GGApp', ["ngCookies", "backand"]);
 
-GGApp.config(function (BackandProvider) {
+GGApp.config(function (BackandProvider, $httpProvider) {
       BackandProvider.setAppName('getgoing');
       BackandProvider.setSignUpToken('a75d782c-73bc-490a-8868-e88be37abd0d');
       BackandProvider.setAnonymousToken('e99dd9a6-c15a-4954-804f-34eb1bc886f4');
+      //BackandProvider.setDefaultHeader();
+
+$httpProvider.interceptors.push(function($q, $log, $cookieStore) {
+  return {
+   'request': function(config) {
+     config.headers['Authorization'] = $cookieStore.get('backand_token');
+console.log("htppi " + config.headers['Authorization']);
+     return config;
+    }
+  };
+});
+
+
+
   });
 
 // otherwise put F name in place of function
@@ -65,7 +79,7 @@ function AuthService(Backand) { // this is why todoswithusers uses SEF, global n
                 .then(function (response) {
                     loadUserDetails();
                     return response;
-                });
+                }).catch( function (e) { console.log("ssin, bssin e: " + e); } );
         };
 
 };
@@ -83,6 +97,7 @@ GGApp.controller('GGLoginCtrl', function GGApp_GGLoginCtrl($scope, $cookies){
       $scope.loginstate = "logout";
       $scope.$emit('doLogin',$scope.username);  // first time, use cookie
     }
+
 
     $scope.dologinstate = function GGLoginCtrl_dologinstate() {
       if ($scope.loginstate == "login") {
@@ -247,7 +262,8 @@ GGApp.controller('GGMainCtrl', ['$scope', '$http', 'DataF', 'AuthService', funct
     $scope.doGoogleLogin = function GGMainCtrl_doGoogleLogin() {
       console.log("doGoogleLogin enter"); 
 
-      AuthService.socialSignin('google').then( function() {
+      spname = $scope.socialProviders.google.name;
+      AuthService.socialSignin(spname).then( function() {
         console.log("auth service signin done");
 
         DataF.getSchedules().then( function(res) {
@@ -354,4 +370,6 @@ GGApp.controller('GGMainCtrl', ['$scope', '$http', 'DataF', 'AuthService', funct
     $scope.ggHideProg = {};
     $scope.barwidth = {};
     // done with 'main' section; (perpetual) one-second timer is set in timeCheck
+
+    $scope.socialProviders = AuthService.getSocialProviders();
   }]);
