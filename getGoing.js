@@ -3,7 +3,75 @@ var gg = {};
 gg.mStr = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 gg.wStr = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
 
-var GGApp = angular.module('GGApp', ["ngCookies"]);
+var GGApp = angular.module('GGApp', ["ngCookies", "backand"]);
+
+GGApp.config(function (BackandProvider) {
+      BackandProvider.setAppName('getgoing');
+      BackandProvider.setSignUpToken('a75d782c-73bc-490a-8868-e88be37abd0d');
+      BackandProvider.setAnonymousToken('e99dd9a6-c15a-4954-804f-34eb1bc886f4');
+  });
+
+// otherwise put F name in place of function
+GGApp.factory('DataF',['$http', 'Backand', function ($http, Backand) {
+  var df = {};
+    // vm.getList = function(name, sort, filter) 
+console.log('DataF setup');
+console.log('DataF ba' + Backand.getApiUrl());
+  df.getSchedules = function() {
+      return $http({
+        method: 'GET',
+        //url: Backand.getApiUrl() + '/1/objects/' + name,
+        url: 'https://api.backand.com/' + '1/schedules',
+        params: {
+          pageSize: 20,
+          pageNumber: 1
+          //,
+          //filter: filter || '',
+          //sort: sort || ''
+        } });
+    };
+  return df;
+}]);
+
+
+
+GGApp.service('AuthService', ['Backand', AuthService]);
+
+function AuthService(Backand) { // this is why todoswithusers uses SEF, global namespace pollution
+
+        var self = this;
+        self.currentUser = {};
+
+        loadUserDetails();
+
+        function loadUserDetails() {
+
+            return Backand.getUserDetails()
+                .then(function (data) {
+                    self.currentUser.details = data;
+                    if(data !== null)
+                        self.currentUser.name = data.username;
+                });
+
+        }
+
+        self.getSocialProviders = function () {
+            return Backand.getSocialProviders()
+        };
+
+        self.socialSignin = function (provider) {
+            //Backand.setRunSignupAfterErrorInSigninSocial(false); //by default run sign-up if there is no sign in
+            return Backand.socialSignin(provider)
+                .then(function (response) {
+                    loadUserDetails();
+                    return response;
+                });
+        };
+
+};
+
+
+
 
 GGApp.controller('GGLoginCtrl', function GGApp_GGLoginCtrl($scope, $cookies){
     var x = $cookies.getGoingUserName;  // so we can read this in the debugger
@@ -36,7 +104,7 @@ GGApp.controller('GGLoginCtrl', function GGApp_GGLoginCtrl($scope, $cookies){
     // Facebook login fiddle http://jsfiddle.net/z6u2z75z/
   });
 
-GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
+GGApp.controller('GGMainCtrl', ['$scope', '$http', 'DataF', 'AuthService', function GGApp_GGMainCtrl($scope, $http, DataF, AuthService){
 	// see main section at bottom
 
     $scope.emptyData = function GGMainCtrl_emptyData() {
@@ -172,11 +240,25 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
 		});     
     };
 
-    /////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
     // LOGIN 
     $scope.doGoogleLogin = function GGMainCtrl_doGoogleLogin() {
-      console.log("doGoogleLogin "); 
-    }
+      console.log("doGoogleLogin enter"); 
+
+      AuthService.socialSignin('google').then( function() {
+        console.log("auth service signin done");
+
+        DataF.getSchedules().then( function(res) {
+         console.log('dgl - then' + res.data);
+       });
+      }).catch( function( reason ) {
+        console.log("dgl - auth socialsignin catch: " + reason)
+      });
+      console.log("doGoogleLogin exit"); 
+
+    };
 
     $scope.$on('doLogin', function GGMainCtrl_doLoginCB(e,uname) { 
       console.log("doLogin " + uname); 
@@ -272,4 +354,4 @@ GGApp.controller('GGMainCtrl', function GGApp_GGMainCtrl($scope, $http){
     $scope.ggHideProg = {};
     $scope.barwidth = {};
     // done with 'main' section; (perpetual) one-second timer is set in timeCheck
-  });
+  }]);
